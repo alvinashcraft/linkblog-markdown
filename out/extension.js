@@ -49,9 +49,33 @@ function activate(context) {
     // The commandId parameter must match the command field in package.json
     const disposable = vscode.commands.registerCommand('linkblog-markdown.generateLinks', () => {
         // Replace this with the code to fetch the links from RSS and generate the markdown
-        vscode.window.showInformationMessage('Hello VS Code!');
+        // vscode.window.showInformationMessage('Hello VS Code!');
+        // Fetch the links from RSS. Replace hard-coded values with values from settings later.
+        fetchRSS('https://www.newsblur.com/social/stories/109116/alvinashcraft?n=5');
+        // Generate the markdown
     });
     context.subscriptions.push(disposable);
+}
+const axios = require('axios');
+const xml2js = require('xml2js');
+async function fetchRSS(url) {
+    try {
+        const response = await axios.get(url);
+        const result = await xml2js.parseStringPromise(response.Data);
+        const items = result.rss.channel[0].item;
+        items.forEach((item) => {
+            console.log({
+                title: item.title[0],
+                link: item.link[0],
+                description: item.description[0]
+            });
+        });
+        vscode.window.showInformationMessage('Links fetched: ' + items.length);
+        console.log('Links fetched: ' + items.length);
+    }
+    catch (error) {
+        console.error("Error fetching RSS feed:", error);
+    }
 }
 // This method is called when the extension is deactivated
 function deactivate() { }
